@@ -26,7 +26,15 @@ const ICONS: Record<CatalogCategory, React.ElementType> = {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onSelectRoom, onSelectColor, onAddItem, selectedRoomId, selectedColorId }) => {
   const [activeCategory, setActiveCategory] = useState<CatalogCategory>('rooms');
+  const [colorSearchQuery, setColorSearchQuery] = useState('');
   const { t } = useLanguage();
+
+  const handleCategoryChange = (cat: CatalogCategory) => {
+    setActiveCategory(cat);
+    if (cat !== 'colors') {
+      setColorSearchQuery('');
+    }
+  };
 
   const renderContent = () => {
     switch (activeCategory) {
@@ -41,21 +49,40 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectRoom, onSelectColor, o
         const selectedRoom = selectedRoomId ? ROOMS.find(r => r.id === selectedRoomId) : null;
         const recommendedColorIds = selectedRoom && ROOM_COLOR_MAP[selectedRoom.id] ? ROOM_COLOR_MAP[selectedRoom.id] : null;
 
+        const filteredColors = COLORS.filter(color =>
+          t(color.nameKey).toLowerCase().includes(colorSearchQuery.toLowerCase())
+        );
+
         if (selectedRoom && recommendedColorIds) {
-          const recommendedColors = COLORS.filter(c => recommendedColorIds.includes(c.id));
-          const otherColors = COLORS.filter(c => !recommendedColorIds.includes(c.id));
+          const recommendedColors = filteredColors.filter(c => recommendedColorIds.includes(c.id));
+          const otherColors = filteredColors.filter(c => !recommendedColorIds.includes(c.id));
 
           return (
             <>
-              <h4 className="text-sm font-semibold text-gray-400 mb-3">{t('recommendedFor')} {t(selectedRoom.nameKey)}</h4>
-              <div className="grid grid-cols-4 gap-3">
-                {recommendedColors.map(color => (
-                  <button key={color.id} onClick={() => onSelectColor(color)} className={`w-12 h-12 rounded-full border-2 transition-all ${selectedColorId === color.id ? 'border-indigo-400 scale-110' : 'border-transparent hover:border-gray-400'}`} style={{ backgroundColor: color.hex }} title={t(color.nameKey)} />
-                ))}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder={t('searchColors')}
+                  value={colorSearchQuery}
+                  onChange={(e) => setColorSearchQuery(e.target.value)}
+                  className="w-full bg-gray-700 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
+
+              {recommendedColors.length > 0 && (
+                <>
+                  <h4 className="text-sm font-semibold text-gray-400 mb-3">{t('recommendedFor')} {t(selectedRoom.nameKey)}</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    {recommendedColors.map(color => (
+                      <button key={color.id} onClick={() => onSelectColor(color)} className={`w-12 h-12 rounded-full border-2 transition-all ${selectedColorId === color.id ? 'border-indigo-400 scale-110' : 'border-transparent hover:border-gray-400'}`} style={{ backgroundColor: color.hex }} title={t(color.nameKey)} />
+                    ))}
+                  </div>
+                </>
+              )}
+
               {otherColors.length > 0 && (
                 <>
-                  <div className="h-px bg-gray-700 my-4"></div>
+                  {recommendedColors.length > 0 && <div className="h-px bg-gray-700 my-4"></div>}
                   <h4 className="text-sm font-semibold text-gray-400 mb-3">{t('allColors')}</h4>
                   <div className="grid grid-cols-4 gap-3">
                     {otherColors.map(color => (
@@ -64,17 +91,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectRoom, onSelectColor, o
                   </div>
                 </>
               )}
+
+              {recommendedColors.length === 0 && otherColors.length === 0 && (
+                <p className="text-gray-400 text-sm">{t('noColorsFound')}</p>
+              )}
             </>
           );
         } else {
           return (
             <>
-              <h4 className="text-sm font-semibold text-gray-400 mb-3">{t('allColors')}</h4>
-              <div className="grid grid-cols-4 gap-3">
-                {COLORS.map(color => (
-                  <button key={color.id} onClick={() => onSelectColor(color)} className={`w-12 h-12 rounded-full border-2 transition-all ${selectedColorId === color.id ? 'border-indigo-400 scale-110' : 'border-transparent hover:border-gray-400'}`} style={{ backgroundColor: color.hex }} title={t(color.nameKey)} />
-                ))}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder={t('searchColors')}
+                  value={colorSearchQuery}
+                  onChange={(e) => setColorSearchQuery(e.target.value)}
+                  className="w-full bg-gray-700 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
+              <h4 className="text-sm font-semibold text-gray-400 mb-3">{t('allColors')}</h4>
+              {filteredColors.length > 0 ? (
+                <div className="grid grid-cols-4 gap-3">
+                  {filteredColors.map(color => (
+                    <button key={color.id} onClick={() => onSelectColor(color)} className={`w-12 h-12 rounded-full border-2 transition-all ${selectedColorId === color.id ? 'border-indigo-400 scale-110' : 'border-transparent hover:border-gray-400'}`} style={{ backgroundColor: color.hex }} title={t(color.nameKey)} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-400 text-sm">{t('noColorsFound')}</p>
+              )}
             </>
           );
         }
@@ -111,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onSelectRoom, onSelectColor, o
           return (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => handleCategoryChange(cat)}
               className={`p-2 rounded-md transition-colors w-full flex flex-col items-center ${activeCategory === cat ? 'bg-indigo-600' : 'hover:bg-gray-700'}`}
               title={t(cat as TranslationKey)}
             >

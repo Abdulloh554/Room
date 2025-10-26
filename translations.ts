@@ -96,6 +96,8 @@ export const translations = {
     lang_en: 'English',
     lang_ru: 'Russian',
     lang_uz: 'Uzbek',
+    searchColors: 'Search colors...',
+    noColorsFound: 'No colors found.',
   },
   ru: {
     designStudio: 'Студия Дизайна',
@@ -194,6 +196,8 @@ export const translations = {
     lang_en: 'английском',
     lang_ru: 'русском',
     lang_uz: 'узбекском',
+    searchColors: 'Поиск цветов...',
+    noColorsFound: 'Цвета не найдены.',
   },
   uz: {
     designStudio: 'Dizayn Studiyasi',
@@ -292,6 +296,8 @@ export const translations = {
     lang_en: 'ingliz',
     lang_ru: 'rus',
     lang_uz: 'oʻzbek',
+    searchColors: 'Ranglarni qidirish...',
+    noColorsFound: 'Ranglar topilmadi.',
   },
 };
 
